@@ -19,20 +19,121 @@
     <script src="${pageContext.request.contextPath}/resources/js/jquery-3.6.0.min.js"></script>
     
     <script type="text/javascript">
-        //jquery 
+        //jquery
+        var 
+        $allCheck = $('#allCheck'),
+        $checks = $('.checks'); 
+        
+     // 위시리스트 전체 체크박스
+        $(document).on('click', '#allCheck', function(){
+        	$('.checks').prop('checked', $(this).prop('checked'));
+        	$('.checks').change();
+        });
+     
+     	$(document).on({
+		      //전체체크 박스 카운팅     
+     		click: function(event){
+     			var len = $('.checks').length,
+    			checkLen = $('.checks:checked').length;
+     			     				
+    			if(len != checkLen)
+    				$('#allCheck').prop('checked', false);
+    			else
+    				if($('#here td').length != null) {
+    				$('#allCheck').prop('checked', true);
+    				}
+
+     		},
+     		
+     		//수강신청 목록, 결제 총액
+     		change : function(event){
+     			var addHtml = '';				
+				var sumPrice = 0;
+				var sprice =0;
+				
+				$('.checks:checked').each(function(){
+					addHtml += '<li>'+ $(this).val() +'</li>'
+					sprice = Number($(this).parents('tr').find('.subject-price span').text());
+					sumPrice += sprice;					
+				});
+				
+				if(addHtml == ''){
+					addHtml = '<li>강의를 선택해주세요.</li>';
+				}
+				
+				$('#subjectList').html(addHtml);
+				$('.meta-value span').text(sumPrice);
+     		}    	
+     		
+     		
+     	}, '.checks');
+     	
+
+
         $(function() {	
 			var
-			$allCheck = $('#allCheck'),
 			$checksDel = $('#checksDel'),
-			$subjectList = $('#subjectList'),
 			$sugangBtn = $('#sugangBtn'),
-			$checks = $('.checks');
+			userId = 'jinsugyeong',
+			noData=function(){
+				var textdata = '휑~';
+				$('aside').css('display', 'none');
+				$('.details-content').parent().attr('class', 'col-lg-10 col-12 offset-lg-1');
+				$('.details-content').html(textdata).css({'text-align':'center','font-size':150+'px', 'font-family':'Kirang Haerang'});
+				textdata = '<div class="button"><a href="JavaScript:Void(0);" class="btn">클래스 목록</a></div>'
+				$('.details-content').append(textdata);
+				$('.details-content .button').css('font-size', 25+'px');
+				$('#subjectList').html('<li>강의를 선택해주세요.</li>');
+				$('.meta-value span').text(0);
+				
+			}; 
 			
-			// 위시리스트 체크박스
-			$allCheck.click(function() {
-				$checks.prop('checked', $(this).prop('checked'));
-				$checks.change();
+			//wishlist db목록 ajax로 받아오기
+			var request = $.ajax({
+				url: "wishlist_db.jsp",
+				method: "POST",
+				data: { loginId : userId },
+				dataType: "json"
+			});	
+			
+			//wishlist 테이블에 넣기
+			request.done(function(data){
+			
+				for(var i=0; i<data.length; i++){
+					var
+					subjectName = data[i].subjectName,
+					teacherName = data[i].teacherName,
+					subjectPrice = data[i].subjectPrice,
+					html = '';
+					
+					html += '<tr><td><input class="form-check-input checks" type="checkbox" value="';
+					html += subjectName;
+					html += '"></td><td><div class="bg-secondary" style=" width: 100%; height: 70px;"></div></td>';
+					html += '<td><ul><li class="subjectName">';
+					html += subjectName+'</li>';
+					html += '<li>'+teacherName+'</li></ul></td>';
+					html += '<td><div class="subject-price"><span>'+subjectPrice+'</span> 원</div></td></tr>';
+					
+					$('#here').append(html);
+					$allCheck.click();			
+				}
 			});
+			
+			request.fail(function() {
+				noData();
+			});
+			
+			//전체체크 박스 카운팅   
+			/* $checks.click(function(){
+			var len = $('.checks').length,
+			checkLen = $('.checks:checked').length;
+			
+			if(len != checkLen)
+				$allCheck.prop('checked', false);
+			else
+				$allCheck.prop('checked', true);
+			}); */			
+			
 			
 			//선택 삭제 버튼
 			$checksDel.click(function() {
@@ -43,15 +144,20 @@
 						$(this).parents('tr').remove();
 					});
 					
-					$allCheck.click();
+					if($allCheck.prop('checked')) {
+						noData();
+					}
+					
+					$('#allCheck').trigger('click');
+					
 				}
 				}else{
 					alert('삭제할 목록을 선택해주세요');
 				}
 			});
 			
-			//수강신청 목록 li
-			$checks.change(function() {
+			//수강신청 목록, 결제 총액
+			/* $checks.change(function() {
 				var addHtml = '';				
 				var sumPrice = 0;
 				var sprice =0;
@@ -68,17 +174,9 @@
 				
 				$subjectList.html(addHtml);
 				$('.meta-value span').text(sumPrice);
-			});
-			//전체체크 박스 카운팅
-			$checks.click(function(){
-					var len = $('.checks').length,
-					checkLen = $('.checks:checked').length;
-					
-					if(len != checkLen)
-						$allCheck.prop('checked', false);
-					else
-						$allCheck.prop('checked', true);
-			});
+				
+			}); */			
+			
 			
 			//수강신청 버튼
 			$sugangBtn.click(function() {
@@ -86,18 +184,33 @@
 				if(checkLen == 0){
 					alert('수강 신청할 강의를 선택해주세요.')
 				}else {
-					var sugangConfirm = confirm('수강신청 하시겠습니까?');
+					var
+					sugangConfirm = confirm('수강신청 하시겠습니까?');
 					if(sugangConfirm == true){
-						location.href='account.jsp' 
+						var checkboxValues = [];
+					    $(".checks:checked").each(function(i) {
+					        checkboxValues.push($(this).val());
+					    });			
+					    
+					    var request = $.ajax({
+							url: "account.jsp",
+							method: "POST",
+							data: { checkArray : checkboxValues },
+							dataType: "html"
+						});	
+					    
+					    request.done(function(data){
+					    	var html='결제';
+					    	$('#progressbar li:nth-child(2)').attr('class', 'active');
+					    	$('.pageTitle h4').html(html);
+					    	
+					    	$('#contentRow').html(data);
+					    });						
 					}	
 				}
 			});
 			
 			
-			
-			
-			//로드됐을때 전체선택 트리거
-			$allCheck.click();
 			
         });
 		

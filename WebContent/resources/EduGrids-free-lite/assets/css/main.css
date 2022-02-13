@@ -3266,7 +3266,7 @@ ol {
 /* Mobile Screen */
 @media only screen and (max-width: 767px) {
   .section {
-    padding: 50px 0px;
+    padding: 3px 0px;
   }
 
   .section-title {
@@ -3718,25 +3718,85 @@ ol {
 .event-sidebar .single-sidget-content {
 	margin: 10px;
 }
-
-.event-details .pageTitle {
-	
-	margin-bottom: 20px;
-	 
+.pageTitle{
+	padding-top: 15px;
 }
 
+
+.pageNav {
+	margin-bottom: 5px;
+}
+
+/*
 .event-details #pageNav {
-	padding-top: 20px;
-	display: flex;
-	
+	padding-top: 10px;
+	padding-left: 15px;
+	list-style-type: decimal;
 }
 
 .event-details #pageNav .pageActive {
 	color: #333;
 	font-weight: bold;
 }
-
+*/
 .event-details .deleteSubject {
 	text-align: right;
+}
+
+
+/* 프로그레스바*/
+
+#progressbar li.active{
+	color: #333;
+	font-weight: bold;
+}
+
+#progressbar li{
+	list-style-type: none;
+    font-size: 12px;
+    width: calc(100%/3);
+    float: left;
+    position: relative;
+    text-align: center;
+}
+
+#progressbar li.active:before, #progressbar li.active:after {
+	background: #4154f1;
+    color: white;
+}
+
+
+#progressbar li:before {
+	content: "1";
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    display: block;
+    background: #eaf0f4;
+    border-radius: 50%;
+    margin: 12px auto 5px auto;
+}
+
+#progressbar li:first-child:after{
+	display:none;
+}
+
+#progressbar li:nth-child(2):before{
+    content: "2";
+}
+
+#progressbar li:nth-child(3):before{
+    content: "3";
+}
+
+#progressbar li:after {
+    content: '';
+    width: 100%;
+    height: 5px;
+    background: #eaf0f4;
+    position: absolute;
+    left: -50%;
+    top: 21px;
+    z-index: -1;
 }
 
